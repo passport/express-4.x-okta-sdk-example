@@ -1,12 +1,6 @@
 var passport = require('passport');
 var Strategy = require('passport-local');
-
-var OktaAuth = require('@okta/okta-auth-js').OktaAuth;
-
-var authClient = new OktaAuth({
-  issuer: process.env['OKTA_URL'],
-  clientId: process.env['OKTA_CLIENT_ID']
-});
+var api = require('../api/auth');
 
 
 module.exports = function() {
@@ -18,7 +12,7 @@ module.exports = function() {
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(function(username, password, cb) {
-    authClient.signIn({
+    api.signIn({
       username: username,
       password: password
     })
