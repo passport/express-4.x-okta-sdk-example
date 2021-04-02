@@ -1,7 +1,8 @@
+require('dotenv').config();
+
 var express = require('express');
 var passport = require('passport');
 var path = require('path');
-//var db = require('./db');
 
 var authRouter = require('./routes/auth');
 var profileRouter = require('./routes/profile');

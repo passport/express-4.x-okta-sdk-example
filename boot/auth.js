@@ -1,7 +1,12 @@
 var passport = require('passport');
 var Strategy = require('passport-local');
-//var crypto = require('crypto');
-//var db = require('../db');
+
+var OktaAuth = require('@okta/okta-auth-js').OktaAuth;
+
+var authClient = new OktaAuth({
+  issuer: process.env['OKTA_URL'],
+  clientId: process.env['OKTA_CLIENT_ID']
+});
 
 
 module.exports = function() {
@@ -13,20 +18,29 @@ module.exports = function() {
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(function(username, password, cb) {
-    /*
-    db.users.findByUsername(username, function(err, user) {
-      if (err) { return cb(err); }
-      if (!user) { return cb(null, false); }
-      
-      crypto.pbkdf2(password, Buffer.from(user.salt, 'base64'), 10000, 32, 'sha256', function(err, hashedPassword) {
-        if (err) { return cb(err); }
-        if (!crypto.timingSafeEqual(Buffer.from(user.hashedPassword, 'base64'), hashedPassword)) {
-          return cb(null, false);
+    authClient.signIn({
+      username: username,
+      password: password
+    })
+    .then(function(transaction) {
+      if (transaction.status === 'SUCCESS') {
+        var user = {
+          id: transaction.user.id,
+          username: transaction.user.profile.login
         }
+        user.name = {
+          familyName: transaction.user.profile.lastName,
+          givenName: transaction.user.profile.firstName
+        }
+        
         return cb(null, user);
-      });
+      } else {
+        throw 'We cannot handle the ' + transaction.status + ' status';
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
     });
-    */
   }));
 
 
