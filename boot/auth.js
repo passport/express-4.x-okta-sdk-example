@@ -17,8 +17,12 @@ module.exports = function() {
       password: password
     })
     .then(function(transaction) {
-      if (transaction.status === 'SUCCESS') {
-        var user = {
+      var user, info;
+      
+      switch (transaction.status) {
+      case 'SUCCESS':
+      case 'MFA_ENROLL':
+        user = {
           id: transaction.user.id,
           username: transaction.user.profile.login
         }
@@ -26,11 +30,21 @@ module.exports = function() {
           familyName: transaction.user.profile.lastName,
           givenName: transaction.user.profile.firstName
         }
-        
-        return cb(null, user);
-      } else {
-        throw 'We cannot handle the ' + transaction.status + ' status';
+        break;
+      default:
+        return cb(new Error(new Error('Unknown authentication transaction status: ' + transaction.status)));
       }
+      
+      switch (transaction.status) {
+      case 'MFA_ENROLL':
+        info = {
+          status: 'MFA_ENROLL',
+          factors: transaction.factors
+        }
+        break;
+      }
+      
+      return cb(null, user, info);
     })
     .catch(function(err) {
       console.error(err);
