@@ -37,6 +37,7 @@
           <img src="<%= qrImageUrl %>"/>
           <form action="/enroll" method="post">
             <input type="text" name="otp" placeholder="OTP">
+            <input type="hidden" name="state" value="<%= state %>">
             <button type="submit" class="contrast">Enroll</button>
           </form>
         </div>

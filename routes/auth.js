@@ -61,6 +61,7 @@ router.get('/enroll', function(req, res){
   })
   .then(function(transaction) {
     console.log('ENROLL THIS THING!');
+    console.log(req.state);
     console.log(transaction);
     console.log(transaction.factor.activation);
     
@@ -76,6 +77,9 @@ router.get('/enroll', function(req, res){
     
     console.log('KEY URI IS:');
     console.log(keyUri);
+    
+    req.state.token = transaction.data.stateToken;
+    req.state.foo = 'bar';
     
     qrcode.toDataURL(keyUri, function(err, url) {
       console.log(err);
@@ -104,6 +108,28 @@ router.get('/enroll', function(req, res){
   */
   
   
+});
+
+router.post('/enroll', function(req, res){
+  console.log('ACTIVATE ENROLLMENT!');
+  console.log(req.body);
+  console.log(req.state);
+  
+  api.tx.resume({
+    stateToken: req.state.token
+  })
+  .then(function(transaction) {
+    console.log('TXN!');
+    console.log(transaction);
+    
+    return transaction.activate({ passCode: req.body.otp })
+  })
+  .then(function(transaction) {
+    console.log(transaction);
+  })
+  .catch(function(err) {
+    console.error(err);
+  });
 });
 
 module.exports = router;
