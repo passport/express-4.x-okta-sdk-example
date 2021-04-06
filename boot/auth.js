@@ -17,6 +17,23 @@ module.exports = function() {
       password: password
     })
     .then(function(transaction) {
+      /*
+      var exists = api.tx.exists();
+      if (exists) {
+        api.tx.resume()
+        .then(function(transaction) {
+          console.log('current status:', transaction.status);
+        })
+        .catch(function(err) {
+          console.error(err);
+        });
+      }
+      
+      return;
+      */
+      
+      //console.log(transaction);
+      
       var user, info;
       
       switch (transaction.status) {
@@ -39,7 +56,8 @@ module.exports = function() {
       case 'MFA_ENROLL':
         info = {
           status: 'MFA_ENROLL',
-          factors: transaction.factors
+          factors: transaction.factors,
+          stateToken: transaction.data.stateToken
         }
         break;
       }
