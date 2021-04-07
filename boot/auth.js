@@ -32,13 +32,14 @@ module.exports = function() {
       return;
       */
       
-      //console.log(transaction);
+      console.log(transaction);
       
       var user, info;
       
       switch (transaction.status) {
       case 'SUCCESS':
       case 'MFA_ENROLL':
+      case 'MFA_REQUIRED':
         user = {
           id: transaction.user.id,
           username: transaction.user.profile.login
@@ -57,6 +58,12 @@ module.exports = function() {
         info = {
           status: 'MFA_ENROLL',
           factors: transaction.factors,
+          stateToken: transaction.data.stateToken
+        }
+        break;
+      case 'MFA_REQUIRED':
+        info = {
+          status: 'MFA_REQUIRED',
           stateToken: transaction.data.stateToken
         }
         break;

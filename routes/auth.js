@@ -19,6 +19,8 @@ router.post('/login',
     //console.log(req.state);
     
     switch (req.authInfo.status) {
+    case 'MFA_REQUIRED':
+      return res.pushState({ token: req.authInfo.stateToken }, '/mfa');
     case 'MFA_ENROLL':
       console.log('HANDLE MFA ENROLL...');
       //req.state = req.authInfo;
@@ -36,6 +38,34 @@ router.post('/login',
 router.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
+});
+
+router.get('/mfa', function(req, res){
+  console.log('MFA!');
+  console.log(req.state);
+  
+  api.tx.resume({
+    stateToken: req.state.token
+  })
+  .then(function(transaction) {
+    console.log(transaction);
+    
+    // FIXME: Don't hard code index, search for Google OTP
+    var factor = transaction.factors[0];
+    return factor.verify();
+  })
+  .then(function(transaction) {
+    console.log(transaction);
+    
+    req.state.token = transaction.data.stateToken;
+    req.state.foo = 'bar';
+    
+    res.render('mfa');
+  })
+  .catch(function(err) {
+    console.error(err);
+  });
+  
 });
 
 router.get('/enroll', function(req, res){
