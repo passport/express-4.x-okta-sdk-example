@@ -1,5 +1,6 @@
 var passport = require('passport');
-var Strategy = require('passport-local');
+var PasswordStrategy = require('passport-local');
+var OTPStrategy = require('passport-otp');
 var api = require('../api/auth');
 
 
@@ -11,7 +12,7 @@ module.exports = function() {
   // (`username` and `password`) submitted by the user.  The function must verify
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
-  passport.use(new Strategy(function(username, password, cb) {
+  passport.use(new PasswordStrategy(function(username, password, cb) {
     api.signIn({
       username: username,
       password: password
@@ -74,6 +75,29 @@ module.exports = function() {
     .catch(function(err) {
       console.error(err);
     });
+  }));
+
+  passport.use(new OTPStrategy({ passReqToCallback: true }, function(req, otp, user, cb) {
+    console.log('AUTH OTP');
+    console.log(req.state);
+    console.log(otp);
+    console.log(user);
+    
+    api.tx.resume({
+      stateToken: req.state.token
+    })
+    .then(function(transaction) {
+      console.log(transaction);
+      
+      return transaction.verify({ passCode: otp })
+    })
+    .then(function(transaction) {
+      console.log(transaction);
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+    
   }));
 
 

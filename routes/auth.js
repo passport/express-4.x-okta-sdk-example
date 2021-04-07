@@ -68,6 +68,12 @@ router.get('/mfa', function(req, res){
   
 });
 
+router.post('/mfa',
+  passport.authenticate('otp', { failureRedirect: '/login' }),
+  function(req, res) {
+    console.log('AUTHED OTP!');
+  });
+
 router.get('/enroll', function(req, res){
   console.log('ENROLLING!');
   console.log(req.state);
