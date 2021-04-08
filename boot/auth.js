@@ -93,6 +93,13 @@ module.exports = function() {
     })
     .then(function(transaction) {
       console.log(transaction);
+      
+      switch (transaction.status) {
+      case 'SUCCESS':
+        return cb(null, true, { method: 'otp' });
+      default:
+        return cb(new Error(new Error('Unknown authentication transaction status: ' + transaction.status)));
+      }
     })
     .catch(function(err) {
       console.error(err);
