@@ -1,12 +1,17 @@
 var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
+var OktaAuth = require('@okta/okta-auth-js').OktaAuth;
 var qrcode = require('qrcode');
-var api = require('../api/auth');
 
+
+var authClient = new OktaAuth({
+  issuer: process.env['OKTA_URL'],
+  clientId: process.env['OKTA_CLIENT_ID']
+});
 
 passport.use(new LocalStrategy(function(username, password, cb) {
-  api.signIn({
+  authClient.signIn({
     username: username,
     password: password
   })
@@ -124,7 +129,7 @@ router.get('/mfa', function(req, res){
   console.log('MFA!');
   console.log(req.state);
   
-  api.tx.resume({
+  authClient.tx.resume({
     stateToken: req.state.token
   })
   .then(function(transaction) {
@@ -160,12 +165,12 @@ router.get('/enroll', function(req, res){
   
   //var factor = req.state.factors[3];
   
-  var exists = api.tx.exists();
+  var exists = authClient.tx.exists();
   console.log('EXISTS? ' + exists);
   // FIXME: Why does one exist here on a new request?
   
   
-  api.tx.resume({
+  authClient.tx.resume({
     stateToken: req.state.token
   })
   .then(function(transaction) {
@@ -231,7 +236,7 @@ router.post('/enroll', function(req, res){
   console.log(req.body);
   console.log(req.state);
   
-  api.tx.resume({
+  authClient.tx.resume({
     stateToken: req.state.token
   })
   .then(function(transaction) {
