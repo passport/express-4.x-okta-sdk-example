@@ -1,6 +1,6 @@
 var passport = require('passport');
 var PasswordStrategy = require('passport-local');
-var OTPStrategy = require('passport-otp');
+//var OTPStrategy = require('passport-otp');
 var api = require('../api/auth');
 
 
@@ -77,6 +77,7 @@ module.exports = function() {
     });
   }));
 
+  /*
   passport.use(new OTPStrategy({ passReqToCallback: true }, function(req, otp, user, cb) {
     console.log('AUTH OTP');
     console.log(req.state);
@@ -106,7 +107,7 @@ module.exports = function() {
     });
     
   }));
-
+  */
 
   // Configure Passport authenticated session persistence.
   //
