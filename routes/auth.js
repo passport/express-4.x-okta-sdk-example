@@ -1,7 +1,87 @@
 var express = require('express');
 var passport = require('passport');
+var LocalStrategy = require('passport-local');
 var qrcode = require('qrcode');
 var api = require('../api/auth');
+
+
+passport.use(new LocalStrategy(function(username, password, cb) {
+  api.signIn({
+    username: username,
+    password: password
+  })
+  .then(function(transaction) {
+    /*
+    var exists = api.tx.exists();
+    if (exists) {
+      api.tx.resume()
+      .then(function(transaction) {
+        console.log('current status:', transaction.status);
+      })
+      .catch(function(err) {
+        console.error(err);
+      });
+    }
+    
+    return;
+    */
+    
+    console.log(transaction);
+    
+    var user, info;
+    
+    switch (transaction.status) {
+    case 'SUCCESS':
+    case 'MFA_ENROLL':
+    case 'MFA_REQUIRED':
+      user = {
+        id: transaction.user.id,
+        username: transaction.user.profile.login
+      }
+      user.name = {
+        familyName: transaction.user.profile.lastName,
+        givenName: transaction.user.profile.firstName
+      }
+      break;
+    default:
+      return cb(new Error(new Error('Unknown authentication transaction status: ' + transaction.status)));
+    }
+    
+    switch (transaction.status) {
+    case 'MFA_ENROLL':
+      info = {
+        status: 'MFA_ENROLL',
+        factors: transaction.factors,
+        stateToken: transaction.data.stateToken
+      }
+      break;
+    case 'MFA_REQUIRED':
+      info = {
+        status: 'MFA_REQUIRED',
+        stateToken: transaction.data.stateToken
+      }
+      break;
+    }
+    
+    return cb(null, user, info);
+  })
+  .catch(function(err) {
+    console.error(err);
+  });
+}));
+
+passport.serializeUser(function(user, cb) {
+  process.nextTick(function() {
+    cb(null, { id: user.id, username: user.username });
+  });
+});
+
+passport.deserializeUser(function(user, cb) {
+  process.nextTick(function() {
+    return cb(null, user);
+  });
+});
+
 
 var router = express.Router();
 
@@ -10,7 +90,7 @@ router.get('/login', function(req, res) {
   res.render('login');
 });
 
-router.post('/login', 
+router.post('/login/password',
   passport.authenticate('local', { failureRedirect: '/login' }),
   function(req, res) {
     //console.log('AUTHED PASSWORD!');
