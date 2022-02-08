@@ -38,6 +38,20 @@ app.use(session({
 app.use(csrf());
 app.use(passport.authenticate('session'));
 app.use(function(req, res, next) {
+  if (req.url == '/mfa') { return next(); }
+  
+  console.log('SESSION MANAGEMENT MIDDLEWARE...');
+  console.log(req.session);
+  
+  switch (req.session.status) {
+  case 'MFA_REQUIRED':
+    return res.redirect('/mfa');
+  }
+  
+  
+  next();
+});
+app.use(function(req, res, next) {
   var msgs = req.session.messages || [];
   res.locals.messages = msgs;
   res.locals.hasMessages = !! msgs.length;

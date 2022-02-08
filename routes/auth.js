@@ -63,6 +63,7 @@ passport.use(new LocalStrategy(function(username, password, cb) {
     case 'MFA_REQUIRED':
       info = {
         status: 'MFA_REQUIRED',
+        factors: transaction.factors,
         stateToken: transaction.data.stateToken
       }
       break;
@@ -106,6 +107,11 @@ router.post('/login/password',
     console.log(req.user);
     console.log(req.authInfo);
     console.log(req.state);
+    console.log(req.session);
+    
+    req.session.status = req.authInfo.status;
+    req.session.stateToken = req.authInfo.stateToken;
+    req.session.factors = req.authInfo.factors;
     
     /*
     switch (req.authInfo.status) {
@@ -132,12 +138,17 @@ router.post('/logout', function(req, res){
 
 router.get('/mfa', function(req, res){
   console.log('MFA!');
-  console.log(req.state);
+  console.log(req.session);
+  
+  var stateToken = req.session.stateToken;
+  console.log('STATE TOKEN IS');
+  console.log(stateToken)
   
   authClient.tx.resume({
-    stateToken: req.state.token
+    stateToken: stateToken
   })
   .then(function(transaction) {
+    console.log('X1');
     console.log(transaction);
     
     // FIXME: Don't hard code index, search for Google OTP
@@ -145,12 +156,13 @@ router.get('/mfa', function(req, res){
     return factor.verify();
   })
   .then(function(transaction) {
+    console.log('X2')
     console.log(transaction);
     
-    req.state.token = transaction.data.stateToken;
-    req.state.foo = 'bar';
+    //req.state.token = transaction.data.stateToken;
+    //req.state.foo = 'bar';
     
-    res.render('mfa');
+    res.render('login/otp');
   })
   .catch(function(err) {
     console.error(err);
