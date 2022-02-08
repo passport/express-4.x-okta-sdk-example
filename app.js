@@ -50,4 +50,4 @@ app.use('/', authRouter);
 app.use('/profile', profileRouter);
 //app.use('/notifications', notificationsRouter);
 
-app.listen(3000);
+module.exports = app;
