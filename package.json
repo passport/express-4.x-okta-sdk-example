@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@okta/okta-auth-js": "^4.8.0",
+    "@okta/okta-auth-js": "^6.0.0",
     "@okta/okta-sdk-nodejs": "^4.5.0",
     "connect-ensure-login": "^0.1.1",
     "connect-sqlite3": "^0.9.13",
