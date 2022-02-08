@@ -38,14 +38,14 @@ app.use(session({
 app.use(csrf());
 app.use(passport.authenticate('session'));
 app.use(function(req, res, next) {
-  if (req.url == '/mfa') { return next(); }
+  if (req.url == '/mfa' || req.url == '/login/otp') { return next(); }
   
   console.log('SESSION MANAGEMENT MIDDLEWARE...');
   console.log(req.session);
   
   switch (req.session.status) {
   case 'MFA_REQUIRED':
-    return res.redirect('/mfa');
+    return res.redirect('/login/otp');
   }
   
   
