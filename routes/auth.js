@@ -11,7 +11,7 @@ var authClient = new OktaAuth({
 });
 
 passport.use(new LocalStrategy(function(username, password, cb) {
-  authClient.signIn({
+  authClient.signInWithCredentials({
     username: username,
     password: password
   })
@@ -71,7 +71,11 @@ passport.use(new LocalStrategy(function(username, password, cb) {
     return cb(null, user, info);
   })
   .catch(function(err) {
-    console.error(err);
+    // https://developer.okta.com/docs/reference/error-codes/
+    if (err.errorCode == 'E0000004') {
+      return cb(null, false, { message: err.errorSummary })
+    }
+    return cb(err);
   });
 }));
 
@@ -96,13 +100,14 @@ router.get('/login', function(req, res) {
 });
 
 router.post('/login/password',
-  passport.authenticate('local', { failureRedirect: '/login' }),
+  passport.authenticate('local', { failureRedirect: '/login', failureMessage: true }),
   function(req, res) {
-    //console.log('AUTHED PASSWORD!');
-    //console.log(req.user);
-    //console.log(req.authInfo);
-    //console.log(req.state);
+    console.log('AUTHED PASSWORD!');
+    console.log(req.user);
+    console.log(req.authInfo);
+    console.log(req.state);
     
+    /*
     switch (req.authInfo.status) {
     case 'MFA_REQUIRED':
       return res.pushState({ token: req.authInfo.stateToken }, '/mfa');
@@ -115,12 +120,12 @@ router.post('/login/password',
       return;
       break;
     }
-    
+    */
     
     res.redirect('/');
   });
 
-router.get('/logout', function(req, res){
+router.post('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
